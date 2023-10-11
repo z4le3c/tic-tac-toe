@@ -66,20 +66,22 @@ const gameBoard = (function () {
 })();
 
 function createPlayer(symbol) {
-    let score = 0;
     const playerSymbol = symbol;
+    let playerName = symbol;
 
-    const addPoint = () => score++;
-    const resetScore = () => score = 0;
     const getPlayerSymbol = () => playerSymbol;
+    const getPlayerName = () => playerName;
+    const setPlayerName = (name) => playerName = name;
 
-    return { addPoint, resetScore, getPlayerSymbol }
+    return {getPlayerSymbol, getPlayerName, setPlayerName}
 }
 
 const gameController = (function () {
     const gridCells = document.querySelectorAll('.cell');
     const turnMessage = document.querySelector('.turn');
     const reStart = document.querySelector('.re-start');
+    const xName = document.querySelector('#x-name');
+    const oName = document.querySelector('#o-name');
 
     const player1 = createPlayer('X');
     const player2 = createPlayer('O');
@@ -97,9 +99,11 @@ const gameController = (function () {
 
         if (!boardInit) {
             reStart.addEventListener('click', () => {
+                player1.setPlayerName(xName.value || player1.getPlayerSymbol());
+                player2.setPlayerName(oName.value || player2.getPlayerSymbol());
                 gameOn = true;
                 currRound = 0;
-                turnMessage.textContent = 'Player X Turn';
+                turnMessage.textContent = `Player ${player1.getPlayerName()} Turn`;
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         gameBoard.setCell('', j, i);
@@ -129,20 +133,22 @@ const gameController = (function () {
 
     const playRound = (col, row) => {
         if (!gameOn) return
-        console.log(row, col)
         if (gameBoard.getCell(col, row) != '')
             return;
+        
         let pSymbol;
         if (currRound % 2 == 0) {
             pSymbol = player1.getPlayerSymbol()
-            turnMessage.textContent = 'Player O Turn';
+            turnMessage.textContent = `Player ${player2.getPlayerName()} Turn`;
         } else {
             pSymbol = player2.getPlayerSymbol()
-            turnMessage.textContent = 'Player X Turn';
+            turnMessage.textContent = `Player ${player1.getPlayerName()} Turn`;
         }
+
         gameBoard.setCell(pSymbol, col, row);
-        if (currRound > 4 && gameBoard.checkForWinner(pSymbol)) {
-            turnMessage.textContent = `Player ${pSymbol} wins`;
+        if (gameBoard.checkForWinner(pSymbol)) {
+            let playerName = currRound % 2 == 0 ? player1.getPlayerName() : player2.getPlayerName();
+            turnMessage.textContent = `Player ${playerName} wins`;
             gameOn = false;
         } else if (currRound == 8) {
             turnMessage.textContent = `It's a tie`;

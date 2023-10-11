@@ -121,12 +121,18 @@ const gameController = (function () {
             turnMessage.textContent = 'Player X Turn';
         }
         gameBoard.setCell(pSymbol, col, row);
-        currRound++;
         buildBoard()
         if (currRound > 4 && gameBoard.checkForWinner(pSymbol)) {
             turnMessage.textContent = `Player ${pSymbol} wins`;
             gameOn = false;
+            return;
         }
+
+        if (currRound == 8) {
+            turnMessage.textContent = `It's a tie`;
+            gameOn = false;
+        } 
+        currRound++;
     }
 
     return { buildBoard }

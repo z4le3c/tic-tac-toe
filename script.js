@@ -77,18 +77,38 @@ function createPlayer(symbol) {
 }
 
 const gameController = (function () {
-    const gridCells = document.querySelectorAll('.cell')
-    const turnMessage = document.querySelector('.turn')
+    const gridCells = document.querySelectorAll('.cell');
+    const turnMessage = document.querySelector('.turn');
+    const reStart = document.querySelector('.re-start');
 
     const player1 = createPlayer('X');
     const player2 = createPlayer('O');
     let currRound = 0;
-    let gameOn = true;
+    let gameOn = false;
     let boardInit = false // tells if the board was instanciated before
 
     const buildBoard = () => {
         let row = 0;
         let col = 0;
+        if (gameOn) 
+            reStart.textContent = 'Restart'
+        else 
+            reStart.textContent = 'Start new game'
+
+        if (!boardInit) {
+            reStart.addEventListener('click', () => {
+                gameOn = true;
+                currRound = 0;
+                turnMessage.textContent = 'Player X Turn';
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        gameBoard.setCell('', j, i);
+                    }
+                }
+                buildBoard();
+            });
+        }
+
         for (const cell of gridCells) {
             if (!boardInit) {
                 cell.addEventListener('click', () => {
@@ -121,18 +141,15 @@ const gameController = (function () {
             turnMessage.textContent = 'Player X Turn';
         }
         gameBoard.setCell(pSymbol, col, row);
-        buildBoard()
         if (currRound > 4 && gameBoard.checkForWinner(pSymbol)) {
             turnMessage.textContent = `Player ${pSymbol} wins`;
             gameOn = false;
-            return;
-        }
-
-        if (currRound == 8) {
+        } else if (currRound == 8) {
             turnMessage.textContent = `It's a tie`;
             gameOn = false;
         } 
         currRound++;
+        buildBoard()
     }
 
     return { buildBoard }

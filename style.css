@@ -11,8 +11,31 @@ body {
     align-items: center;
 }
 
+.game-container {
+    display: grid;
+    justify-items: center;
+}
+
 .game-container h1 {
     text-align: center;
+}
+.game-container .re-start {
+    border: 0;
+    text-align: center;
+    font-size: 2.4rem;
+    background: lightseagreen;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-container .re-start:hover {
+    background: rgb(16, 141, 135);
+}
+
+.game-container .re-start:active {
+    background: rgb(6, 83, 79);
 }
 
 .gameBoard {

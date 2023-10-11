@@ -1,5 +1,3 @@
-const gridCells = document.querySelectorAll('.cell')
-
 const gameBoard = (function () {
     const gameBoard = [['','',''],['','',''],['','','']];
     /*
@@ -11,7 +9,6 @@ const gameBoard = (function () {
     const setCell = (symbol, col, row) => {
         let colInBounds = -1 < col && col < 3;
         let rowInBounds = -1 < row && row < 3;
-        val = val.toLowerCase();
         if (colInBounds && rowInBounds) {
             gameBoard[row][col] = symbol;
             return true;
@@ -54,10 +51,12 @@ function createPlayer (symbol) {
     return {addPoint, resetScore, getPlayerSymbol}
 }
 
-const gameController = (function (gridCells) {
+const gameController = (function () {
+    const gridCells = document.querySelectorAll('.cell')
+    const turnMessage = document.querySelector('.turn')
+
     const player1 = createPlayer('X');
     const player2 = createPlayer('O');
-    let rounds = 0;
     let currRound = 0;
     let boardInit = false // tells if the board was instanciated before
 
@@ -65,27 +64,37 @@ const gameController = (function (gridCells) {
         let row = 0;
         let col = 0;
         for (const cell of gridCells) {
-            cell.setAttribute('id', `${row}-${col}`);
+            if (!boardInit) {
+                cell.addEventListener('click', () => playRound(cell));
+                cell.setAttribute('id', `${row}-${col}`);
+            }
             cell.textContent = gameBoard.getCell(col, row);
             col++;
             if (col == 3) {
                 row++;
                 col = col%3;
             }
-            if (!boardInit) {
-                cell.addEventListener('click', () => console.log(cell.id));
-            }
         }
         boardInit = true;
     }
 
-    const playRound = () => {
-        
+    const playRound = (cell) => {
+        let [row, col] = cell.id.split('-');
+        console.log(row, col)
+        if (gameBoard.getCell(col, row) != '') 
+            return;
+        if (currRound % 2 == 0) {
+            gameBoard.setCell(player1.getPlayerSymbol(), col, row);
+            turnMessage.textContent = 'Player O Turn';
+        } else {
+            gameBoard.setCell(player2.getPlayerSymbol(), col, row);
+            turnMessage.textContent = 'Player X Turn';
+        }
+        currRound++;
+        buildBoard()
     }
 
     return {buildBoard}
-})(gridCells);
+})();
 
-gameController.buildBoard()
-gameController.buildBoard()
 gameController.buildBoard()

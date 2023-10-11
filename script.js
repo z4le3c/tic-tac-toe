@@ -65,7 +65,10 @@ const gameController = (function () {
         let col = 0;
         for (const cell of gridCells) {
             if (!boardInit) {
-                cell.addEventListener('click', () => playRound(cell));
+                cell.addEventListener('click', () => {
+                    let [row, col] = cell.id.split('-');
+                    playRound(col, row)
+                });
                 cell.setAttribute('id', `${row}-${col}`);
             }
             cell.textContent = gameBoard.getCell(col, row);
@@ -78,8 +81,7 @@ const gameController = (function () {
         boardInit = true;
     }
 
-    const playRound = (cell) => {
-        let [row, col] = cell.id.split('-');
+    const playRound = (col, row) => {
         console.log(row, col)
         if (gameBoard.getCell(col, row) != '') 
             return;

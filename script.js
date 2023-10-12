@@ -200,7 +200,7 @@ const gameController = (function () {
                 move = aI.makeMove();
                 playRound(move.col, move.row)
                 player2.setPlayerName(p1Name.value || player2.getPlayerSymbol());
-                turnMessage.textContent = ''
+                turnMessage.textContent = 'AI started, your turn'
             } else { // player starts
                 player1.setPlayerName(p1Name.value || player1.getPlayerSymbol());
                 player2.setPlayerName('AI');

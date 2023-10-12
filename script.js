@@ -1,4 +1,6 @@
 const gameBoard = (function () {
+    const size = 3
+
     const gameBoard = [['', '', ''], ['', '', ''], ['', '', '']];
     /*
     *  @param {string} symbol
@@ -7,8 +9,8 @@ const gameBoard = (function () {
     *  @return {boolean}
     */
     const setCell = (symbol, col, row) => {
-        let colInBounds = -1 < col && col < 3;
-        let rowInBounds = -1 < row && row < 3;
+        let colInBounds = -1 < col && col < size;
+        let rowInBounds = -1 < row && row < size;
         if (colInBounds && rowInBounds) {
             gameBoard[row][col] = symbol;
             return true;
@@ -22,8 +24,8 @@ const gameBoard = (function () {
     *  @return {string}
     */
     const getCell = (col, row) => {
-        let colInBounds = -1 < col && col < 3;
-        let rowInBounds = -1 < row && row < 3;
+        let colInBounds = -1 < col && col < size;
+        let rowInBounds = -1 < row && row < size;
         if (colInBounds && rowInBounds)
             return gameBoard[row][col];
         else
@@ -52,17 +54,17 @@ const gameBoard = (function () {
                     } else if (i + j === gameBoard.length-1) {
                         diagonals.set('lr', (diagonals.get('lr') || 0) + 1)
                     }
-                    if (rows.get(i) == 3 ||
-                        columns.get(j) == 3 ||
-                        diagonals.get('rl') == 3 ||
-                        diagonals.get('lr') == 3) return true;
+                    if (rows.get(i) == size ||
+                        columns.get(j) == size ||
+                        diagonals.get('rl') == size ||
+                        diagonals.get('lr') == size) return true;
                 }
             }
         }
         return false;
     }
 
-    return { setCell, getCell, checkForWinner };
+    return { setCell, getCell, checkForWinner, size};
 })();
 
 function createPlayer(symbol) {
@@ -72,6 +74,9 @@ function createPlayer(symbol) {
     const getPlayerSymbol = () => playerSymbol;
     const getPlayerName = () => playerName;
     const setPlayerName = (name) => playerName = name;
+    const playMove = () => {
+        
+    }
 
     return {getPlayerSymbol, getPlayerName, setPlayerName}
 }
@@ -79,39 +84,40 @@ function createPlayer(symbol) {
 const gameController = (function () {
     const gridCells = document.querySelectorAll('.cell');
     const turnMessage = document.querySelector('.turn');
-    const reStart = document.querySelector('.re-start');
-    const xName = document.querySelector('#x-name');
-    const oName = document.querySelector('#o-name');
+    const reStartButton = document.querySelector('.re-start');
+    const toggleAI = document.querySelector('.toggle-ai');
+    const p1Name = document.querySelector('#x-name');
+    const p2Name = document.querySelector('#o-name');
+    const p2Wrapper = document.querySelector('.p2-wrapper');
 
     const player1 = createPlayer('X');
     const player2 = createPlayer('O');
     let currRound = 0;
     let gameOn = false;
-    let boardInit = false // tells if the board was instanciated before
+    let boardInit = false; // tells if the board was instanciated before
+    let aiActive = false;
+    let aiTurn = false;
 
     const buildBoard = () => {
         let row = 0;
         let col = 0;
         if (gameOn) 
-            reStart.textContent = 'Restart'
+            reStartButton.textContent = 'Restart'
         else 
-            reStart.textContent = 'Start new game'
+            reStartButton.textContent = 'Start new game'
 
         if (!boardInit) {
-            reStart.addEventListener('click', () => {
-                player1.setPlayerName(xName.value || player1.getPlayerSymbol());
-                player2.setPlayerName(oName.value || player2.getPlayerSymbol());
-                gameOn = true;
-                currRound = 0;
-                turnMessage.textContent = `Player ${player1.getPlayerName()} Turn`;
-                for (let i = 0; i < 3; i++) {
-                    for (let j = 0; j < 3; j++) {
-                        gameBoard.setCell('', j, i);
-                    }
-                }
-                buildBoard();
+            reStartButton.addEventListener('click', () => reStart());
+
+            toggleAI.addEventListener('click', () => {
+                aiActive = !aiActive;
+                if (aiActive) 
+                    p2Wrapper.style.visibility = 'hidden';
+                else
+                    p2Wrapper.style.visibility = 'visible'
+                reStart();
             });
-        }
+        } // activates buttons, once
 
         for (const cell of gridCells) {
             if (!boardInit) {
@@ -120,14 +126,14 @@ const gameController = (function () {
                     playRound(col, row)
                 });
                 cell.setAttribute('id', `${row}-${col}`);
-            }
+            } // activates grid cells, once
             cell.textContent = gameBoard.getCell(col, row);
             col++;
-            if (col == 3) {
+            if (col == gameBoard.size) {
                 row++;
-                col = col % 3;
+                col = col % gameBoard.size;
             }
-        }
+        } 
         boardInit = true;
     }
 
@@ -139,26 +145,80 @@ const gameController = (function () {
         let pSymbol;
         if (currRound % 2 == 0) {
             pSymbol = player1.getPlayerSymbol()
-            turnMessage.textContent = `Player ${player2.getPlayerName()} Turn`;
+            turnMessage.textContent = `${player2.getPlayerName()} Turn`;
         } else {
             pSymbol = player2.getPlayerSymbol()
-            turnMessage.textContent = `Player ${player1.getPlayerName()} Turn`;
+            turnMessage.textContent = `${player1.getPlayerName()} Turn`;
         }
-
         gameBoard.setCell(pSymbol, col, row);
+
         if (gameBoard.checkForWinner(pSymbol)) {
             let playerName = currRound % 2 == 0 ? player1.getPlayerName() : player2.getPlayerName();
-            turnMessage.textContent = `Player ${playerName} wins`;
+            turnMessage.textContent = `${playerName} wins`;
             gameOn = false;
         } else if (currRound == 8) {
             turnMessage.textContent = `It's a tie`;
             gameOn = false;
         } 
         currRound++;
+        if (aiActive && !aiTurn) {
+            aiTurn = true;
+            move = aI.makeMove();
+            if (gameOn)
+                playRound(move.col, move.row);
+        } else if (aiActive) {
+            aiTurn = false;
+        }
         buildBoard()
     }
 
+    const reStart = () => {
+        gameOn = true;
+        aiTurn = false;
+        currRound = 0;
+        
+        for (let i = 0; i < gameBoard.size; i++) {
+            for (let j = 0; j < gameBoard.size; j++) {
+                gameBoard.setCell('', j, i);
+            }
+        }
+
+        if (aiActive) {
+            player1.setPlayerName('AI');
+            aiTurn = true;
+            move = aI.makeMove();
+            playRound(move.col, move.row)
+            player2.setPlayerName(p1Name.value || player2.getPlayerSymbol());
+        } else {
+            player1.setPlayerName(p1Name.value || player1.getPlayerSymbol());
+            player2.setPlayerName(p2Name.value || player2.getPlayerSymbol());
+            turnMessage.textContent = `${player1.getPlayerName()} Turn`;
+        }
+        buildBoard();
+    }
     return { buildBoard }
+})();
+
+const aI = (function () {
+    const makeMove = () => {
+        vCells = getValidCells();
+        cell = vCells[Math.floor(Math.random() * vCells.length)];
+        return cell;
+    }
+
+    const getValidCells = () => {
+        let cells = [];
+        for (let row = 0; row < gameBoard.size; row++) {
+            for (let col = 0; col < gameBoard.size; col++) {
+                if (gameBoard.getCell(col, row) == '') {
+                    cells.push({col:col, row:row})
+                }
+            }
+        }
+        return cells
+    }
+
+    return {makeMove};
 })();
 
 gameController.buildBoard()

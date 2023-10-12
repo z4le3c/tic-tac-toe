@@ -9,10 +9,14 @@
 </head>
 <body>
     <div class="game-container">
-        <label for="x-name">Player with mark X</label>
-        <input type="text" id="x-name">
-        <label for="o-name">Player with mark O</label>
-        <input type="text" id="o-name">
+        <div class="p1-wrapper">
+            <label for="x-name">Player1 name</label>
+            <input type="text" id="x-name">
+        </div>
+        <div class="p2-wrapper">
+            <label for="o-name">Player2 name</label>
+            <input type="text" id="o-name">
+        </div>
         <div class="gameBoard">
             <div class="cell">X</div>
             <div class="cell"></div>
@@ -26,6 +30,7 @@
         </div>
         <h1 class="turn"></h1>
         <button class="re-start"></button>
+        <button class="toggle-ai">Toggle AI</button>
     </div>
 </body>
 </html>

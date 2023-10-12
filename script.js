@@ -2,12 +2,12 @@ const gameBoard = (function () {
     const size = 3
 
     const gameBoard = [['', '', ''], ['', '', ''], ['', '', '']];
-    /*
-    *  @param {string} symbol
-    *  @param {number} col
-    *  @param {number} row
-    *  @return {boolean}
-    */
+    /**
+     *  @param {string} symbol
+     *  @param {number} col
+     *  @param {number} row
+     *  @return {boolean}
+     */
     const setCell = (symbol, col, row) => {
         let colInBounds = -1 < col && col < size;
         let rowInBounds = -1 < row && row < size;
@@ -18,11 +18,11 @@ const gameBoard = (function () {
         return false;
     };
 
-    /*
-    *  @param {number} col
-    *  @param {number} row
-    *  @return {string}
-    */
+    /**
+     *  @param {number} col
+     *  @param {number} row
+     *  @return {string}
+     */
     const getCell = (col, row) => {
         let colInBounds = -1 < col && col < size;
         let rowInBounds = -1 < row && row < size;
@@ -32,10 +32,10 @@ const gameBoard = (function () {
             return '';
     }
 
-    /*
-    *  @param {string} symbol
-    *  @return {void}
-    */
+    /**
+     *  @param {string} symbol
+     *  @return {void}
+     */
     const checkForWinner = (symbol) => {
         let rows = new Map();
         let columns = new Map();
@@ -74,9 +74,6 @@ function createPlayer(symbol) {
     const getPlayerSymbol = () => playerSymbol;
     const getPlayerName = () => playerName;
     const setPlayerName = (name) => playerName = name;
-    const playMove = () => {
-        
-    }
 
     return {getPlayerSymbol, getPlayerName, setPlayerName}
 }
@@ -97,7 +94,9 @@ const gameController = (function () {
     let boardInit = false; // tells if the board was instanciated before
     let aiActive = false;
     let aiTurn = false;
-
+    /**
+     * @return {void}
+     */
     const buildBoard = () => {
         let row = 0;
         let col = 0;
@@ -138,17 +137,23 @@ const gameController = (function () {
         boardInit = true;
     }
 
+    /**
+     * 
+     * @param {number} col 
+     * @param {number} row 
+     * @returns {void}
+     */
     const playRound = (col, row) => {
         if (!gameOn) return
         if (gameBoard.getCell(col, row) != '')
             return;
         
         let pSymbol;
-        if (currRound % 2 == 0) {
+        if (currRound % 2 == 0) 
             pSymbol = player1.getPlayerSymbol()
-        } else {
+        else 
             pSymbol = player2.getPlayerSymbol()
-        }
+        
         gameBoard.setCell(pSymbol, col, row);
 
         buildBoard();
@@ -172,6 +177,9 @@ const gameController = (function () {
         }
     }
 
+    /**
+     * @return {void}
+     */
     const reStart = () => {
         gameOn = true;
         aiTurn = false;
@@ -186,14 +194,14 @@ const gameController = (function () {
         buildBoard();
 
         if (aiActive) {
-            if (Math.random() < .5) {
+            if (Math.random() < .5) { // AI starts
                 player1.setPlayerName('AI');
                 aiTurn = true;
                 move = aI.makeMove();
                 playRound(move.col, move.row)
                 player2.setPlayerName(p1Name.value || player2.getPlayerSymbol());
                 turnMessage.textContent = ''
-            } else {
+            } else { // player starts
                 player1.setPlayerName(p1Name.value || player1.getPlayerSymbol());
                 player2.setPlayerName('AI');
                 turnMessage.textContent = `You start`;
@@ -209,12 +217,18 @@ const gameController = (function () {
 })();
 
 const aI = (function () {
+    /**
+     * @returns {object}
+     */
     const makeMove = () => {
         vCells = getValidCells();
         cell = vCells[Math.floor(Math.random() * vCells.length)];
         return cell;
     }
 
+    /**
+     * @returns {Array}
+     */
     const getValidCells = () => {
         let cells = [];
         for (let row = 0; row < gameBoard.size; row++) {

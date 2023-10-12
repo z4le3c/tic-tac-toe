@@ -101,6 +101,7 @@ const gameController = (function () {
     const buildBoard = () => {
         let row = 0;
         let col = 0;
+        turnMessage.textContent = ''
         if (gameOn) 
             reStartButton.textContent = 'Restart'
         else 
@@ -145,12 +146,12 @@ const gameController = (function () {
         let pSymbol;
         if (currRound % 2 == 0) {
             pSymbol = player1.getPlayerSymbol()
-            turnMessage.textContent = `${player2.getPlayerName()} Turn`;
         } else {
             pSymbol = player2.getPlayerSymbol()
-            turnMessage.textContent = `${player1.getPlayerName()} Turn`;
         }
         gameBoard.setCell(pSymbol, col, row);
+
+        buildBoard();
 
         if (gameBoard.checkForWinner(pSymbol)) {
             let playerName = currRound % 2 == 0 ? player1.getPlayerName() : player2.getPlayerName();
@@ -169,7 +170,6 @@ const gameController = (function () {
         } else if (aiActive) {
             aiTurn = false;
         }
-        buildBoard()
     }
 
     const reStart = () => {
@@ -183,18 +183,27 @@ const gameController = (function () {
             }
         }
 
+        buildBoard();
+
         if (aiActive) {
-            player1.setPlayerName('AI');
-            aiTurn = true;
-            move = aI.makeMove();
-            playRound(move.col, move.row)
-            player2.setPlayerName(p1Name.value || player2.getPlayerSymbol());
+            if (Math.random() < .5) {
+                player1.setPlayerName('AI');
+                aiTurn = true;
+                move = aI.makeMove();
+                playRound(move.col, move.row)
+                player2.setPlayerName(p1Name.value || player2.getPlayerSymbol());
+                turnMessage.textContent = ''
+            } else {
+                player1.setPlayerName(p1Name.value || player1.getPlayerSymbol());
+                player2.setPlayerName('AI');
+                turnMessage.textContent = `You start`;
+            }
+            
         } else {
             player1.setPlayerName(p1Name.value || player1.getPlayerSymbol());
             player2.setPlayerName(p2Name.value || player2.getPlayerSymbol());
-            turnMessage.textContent = `${player1.getPlayerName()} Turn`;
+            turnMessage.textContent = `${player1.getPlayerName()} Starts`;
         }
-        buildBoard();
     }
     return { buildBoard }
 })();

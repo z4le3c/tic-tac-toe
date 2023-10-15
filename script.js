@@ -164,6 +164,16 @@ const gameController = (function () {
 
         buildBoard();
 
+        if (!aiActive) {
+            if (currRound % 2 == 0) 
+                turnMessage.textContent = `${player2.getPlayerName()} turn`;
+            else 
+                turnMessage.textContent = `${player1.getPlayerName()} turn`;
+        } else {
+            let humanSymbol = pSymbol == 'X' ? 'O' : 'X';
+            turnMessage.textContent = `Your turn(${humanSymbol})`;
+        }
+
         if (gameBoard.checkForWinner(pSymbol)) {
             let playerName = currRound % 2 == 0 ? player1.getPlayerName() : player2.getPlayerName();
             turnMessage.textContent = `${playerName} wins`;

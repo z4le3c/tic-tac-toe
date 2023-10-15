@@ -275,15 +275,13 @@ const aI = (function () {
     const minimax = (symbol, boardState) => {
         let emptyCells = getEmptyCells(boardState);
         // check for winner in boardState
-        if (!emptyCells.length)
-            return 0; // if there is a draw
-
         if (gameBoard.checkForWinner(symbol, boardState)) {
             if (symbol != aiSymbol)
                 return -1; // human player wins
             else 
                 return 1; // ai wins
-        }
+        } else if (!emptyCells.length)
+            return 0; // if there is a draw
 
         // recursively invoke minimax on each empty cell
         let nextSymbol = symbol == aiSymbol ? playerSymbol : aiSymbol;

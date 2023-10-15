@@ -34,15 +34,21 @@ const gameBoard = (function () {
 
     /**
      *  @param {string} symbol
+     *  @param {Array[Array]} board (optional)
      *  @return {void}
      */
-    const checkForWinner = (symbol) => {
+    const checkForWinner = (symbol, board) => {
         let rows = new Map();
         let columns = new Map();
         let diagonals = new Map();
         for (let i = 0; i < gameBoard.length; i++) {
             for (let j = 0; j < gameBoard.length; j++) {
-                let s = gameBoard[i][j]
+                let s
+                if (board) {
+                    s = board[i][j];
+                } else {
+                    s  = gameBoard[i][j]
+                }
                 if (s == symbol) {
                     rows.set(i, (rows.get(i) || 0) + 1);
                     columns.set(j, (columns.get(j) || 0) + 1);
@@ -197,6 +203,7 @@ const gameController = (function () {
             if (Math.random() < .5) { // AI starts
                 player1.setPlayerName('AI');
                 aiTurn = true;
+                aI.setSymbols(player1.getPlayerSymbol(), player2.getPlayerSymbol())
                 move = aI.makeMove();
                 playRound(move.col, move.row)
                 player2.setPlayerName(p1Name.value || player2.getPlayerSymbol());
@@ -204,6 +211,7 @@ const gameController = (function () {
             } else { // player starts
                 player1.setPlayerName(p1Name.value || player1.getPlayerSymbol());
                 player2.setPlayerName('AI');
+                aI.setSymbols(player2.getPlayerSymbol(), player1.getPlayerSymbol())
                 turnMessage.textContent = `You start`;
             }
             
@@ -217,31 +225,120 @@ const gameController = (function () {
 })();
 
 const aI = (function () {
+
+    let aiSymbol;
+    let playerSymbol;
+
+    const setSymbols = (aiS, pS) => {
+        aiSymbol = aiS;
+        playerSymbol = pS;
+    };
+
     /**
      * @returns {object}
      */
     const makeMove = () => {
-        vCells = getValidCells();
-        cell = vCells[Math.floor(Math.random() * vCells.length)];
-        return cell;
+        let emptyCells = getEmptyCells();
+        if (emptyCells.length == 9) {
+            return emptyCells[Math.floor(Math.random() * 9)]
+        }
+        let boardState = saveBoardState();
+        let bestCell = {cell:null, score:-Infinity}
+        for (const c of emptyCells) {
+            // play nextSymbol in cell c
+            boardState[c.row][c.col] = aiSymbol;
+            // get the empty cells
+            let score = minimax(aiSymbol, boardState);
+            console.log(c,score)
+            if (bestCell.score < score) {
+                bestCell.cell = c;
+                bestCell.score = score;
+            }
+
+            // restore emptyCellsCopy and boardState
+            boardState[c.row][c.col] = '';
+        }
+
+        return bestCell.cell;
+    }
+
+    const minimax = (symbol, boardState) => {
+        let emptyCells = getEmptyCells(boardState);
+        // check for winner in boardState
+        if (!emptyCells.length)
+            return 0; // if there is a draw
+
+        if (gameBoard.checkForWinner(symbol, boardState)) {
+            if (symbol != aiSymbol)
+                return -1; // human player wins
+            else 
+                return 1; // ai wins
+        }
+
+        // recursively invoke minimax on each empty cell
+        let nextSymbol = symbol == aiSymbol ? playerSymbol : aiSymbol;
+        let bestScore
+        if (aiSymbol == nextSymbol)
+            bestScore = -Infinity;
+        else 
+            bestScore = Infinity;
+        for (const c of emptyCells) {
+            // play nextSymbol in cell c
+            boardState[c.row][c.col] = nextSymbol;
+            // get the empty cells
+
+            let score = minimax(nextSymbol, boardState);
+            if (aiSymbol == nextSymbol) {
+                bestScore = Math.max(bestScore, score)
+
+            } else {
+                bestScore = Math.min(bestScore, score)
+            }
+
+            // restore boardState
+            boardState[c.row][c.col] = '';
+        }
+
+        return bestScore;
+    }
+
+    /**
+     * @returns {Array[Array]}
+     */
+    const saveBoardState = () => {
+        let bState = [];
+        for (let row = 0; row < gameBoard.size; row++) {
+            bState.push([])
+            for (let col = 0; col < gameBoard.size; col++) {
+                bState[row].push(gameBoard.getCell(col, row))
+            }
+        }
+
+        return bState;
     }
 
     /**
      * @returns {Array}
      */
-    const getValidCells = () => {
+    const getEmptyCells = (board) => {
         let cells = [];
         for (let row = 0; row < gameBoard.size; row++) {
             for (let col = 0; col < gameBoard.size; col++) {
-                if (gameBoard.getCell(col, row) == '') {
-                    cells.push({col:col, row:row})
+                if (board) {
+                    if (board[row][col] == '') {
+                        cells.push({col:col, row:row})
+                    }
+                } else {
+                    if (gameBoard.getCell(col, row) == '') {
+                        cells.push({col:col, row:row})
+                    }
                 }
             }
         }
         return cells
     }
 
-    return {makeMove};
+    return {makeMove, setSymbols};
 })();
 
 gameController.buildBoard()
